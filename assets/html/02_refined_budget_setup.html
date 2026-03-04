@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#197fe6",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111921",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Budget Setup</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-auto min-h-screen w-full max-w-md mx-auto flex-col bg-background-light dark:bg-background-dark overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined cursor-pointer">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-12">Set Your Budget</h2>
+</div>
+<!-- Toggle Frequency -->
+<div class="flex px-4 py-3">
+<div class="flex h-12 flex-1 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 p-1.5">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-800 has-[:checked]:shadow-sm has-[:checked]:text-primary text-slate-500 dark:text-slate-400 text-sm font-semibold transition-all">
+<span class="truncate">Weekly</span>
+<input class="hidden" name="frequency" type="radio" value="Weekly"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-800 has-[:checked]:shadow-sm has-[:checked]:text-primary text-slate-500 dark:text-slate-400 text-sm font-semibold transition-all">
+<span class="truncate">Monthly</span>
+<input checked="" class="hidden" name="frequency" type="radio" value="Monthly"/>
+</label>
+</div>
+</div>
+<!-- Amount Input Section -->
+<!-- Current Balance Section -->
+<div class="px-4 text-center">
+<h3 class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">Enter Allowance</h3>
+<div class="relative flex items-center justify-center">
+<span class="text-4xl font-bold text-primary mr-2">₱</span>
+<input class="w-full max-w-[200px] bg-transparent border-none focus:ring-0 text-5xl font-bold text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-700 text-center p-0" placeholder="0.00" type="number"/>
+</div>
+<div class="h-px bg-slate-200 dark:bg-slate-800 w-32 mx-auto mt-2"></div><button class="mt-4 text-slate-500 dark:text-slate-400 text-xs font-medium flex items-center justify-center gap-1 mx-auto hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">add</span> Add Current Balance
+</button>
+</div>
+<!-- Budget Categories -->
+<div class="flex flex-col px-4 pt-4 pb-20">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Budget Categories</h3>
+<button class="text-primary text-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">add</span> Add New
+                </button>
+</div>
+<div class="space-y-3">
+<!-- Transport Category -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">directions_bus</span>
+</div>
+<div>
+<p class="font-semibold text-slate-900 dark:text-slate-100">Transport</p>
+<p class="text-xs text-slate-500">Commute, Grab, Fuel</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-medium text-slate-400">₱</span>
+<input class="w-20 text-right bg-transparent border-none focus:ring-0 p-0 font-bold text-slate-900 dark:text-white" type="text" value="2,000"/>
+</div>
+</div>
+<!-- Food Category -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<p class="font-semibold text-slate-900 dark:text-slate-100">Food</p>
+<p class="text-xs text-slate-500">Groceries, Dining out</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-medium text-slate-400">₱</span>
+<input class="w-20 text-right bg-transparent border-none focus:ring-0 p-0 font-bold text-slate-900 dark:text-white" type="text" value="5,000"/>
+</div>
+</div>
+<!-- Savings Category -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
+<span class="material-symbols-outlined">savings</span>
+</div>
+<div>
+<p class="font-semibold text-slate-900 dark:text-slate-100">Savings</p>
+<p class="text-xs text-slate-500">Emergency, Travel fund</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-medium text-slate-400">₱</span>
+<input class="w-20 text-right bg-transparent border-none focus:ring-0 p-0 font-bold text-slate-900 dark:text-white" type="text" value="3,000"/>
+</div>
+</div>
+<!-- Others Category -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">more_horiz</span>
+</div>
+<div>
+<p class="font-semibold text-slate-900 dark:text-slate-100">Others</p>
+<p class="text-xs text-slate-500">Miscellaneous</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-medium text-slate-400">₱</span>
+<input class="w-20 text-right bg-transparent border-none focus:ring-0 p-0 font-bold text-slate-900 dark:text-white" type="text" value="1,000"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer Button -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-4 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light dark:via-background-dark to-transparent">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+                Save Budget
+            </button>
+</div>
+</div>
+</body></html>
