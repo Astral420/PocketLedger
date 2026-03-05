@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Biyahe Logger - Register</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#197fe6",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111921",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col justify-center items-center p-4">
+<div class="w-full max-w-md bg-white dark:bg-slate-900 shadow-xl rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+<!-- Header Section -->
+<div class="p-8 pb-4 text-center">
+<div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+<span class="material-icons text-primary text-3xl">directions_bus</span>
+</div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">PocketLedger</h1>
+<p class="text-slate-500 dark:text-slate-400 mt-2 text-sm uppercase tracking-widest">Simulan ang iyong pag-bubudget</p>
+</div>
+<!-- Registration Form -->
+<form class="p-8 pt-4 space-y-5">
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="name">Full Name</label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">person</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" id="name" placeholder="Juan Dela Cruz" type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="email">Email Address</label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">mail</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" id="email" placeholder="juan@email.com" type="email"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="password">Password</label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">lock</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" id="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<div class="flex items-start mt-2">
+<div class="flex items-center h-5">
+<input class="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary" id="terms" type="checkbox"/>
+</div>
+<label class="ml-2 text-xs text-slate-500 dark:text-slate-400" for="terms">
+                    Sumasang-ayon ako sa <a class="text-primary hover:underline" href="#">Terms of Service</a> at <a class="text-primary hover:underline" href="#">Privacy Policy</a>.
+                </label>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg shadow-md transition-all active:scale-[0.98] mt-4" type="submit">
+                Register Now
+            </button>
+</form>
+<!-- Social Footer -->
+<div class="px-8 pb-8 text-center">
+<div class="relative my-6">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
+</div>
+<div class="relative flex justify-center text-xs">
+<span class="bg-white dark:bg-slate-900 px-2 text-slate-500 uppercase">May account na?</span>
+</div>
+</div>
+<a class="inline-block text-primary font-medium hover:text-primary/80 transition-colors" href="#">
+                Mag-Login Dito
+            </a>
+</div>
+</div>
+<!-- Background Decorative Elements -->
+<div class="fixed top-0 left-0 w-full h-full -z-10 opacity-30 pointer-events-none">
+<div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full"></div>
+</div>
+<!-- Aesthetic Filipino touch at bottom -->
+<footer class="mt-8 text-slate-400 dark:text-slate-600 text-xs flex items-center gap-1">
+<span>Gawang Pinoy</span>
+<span class="material-icons text-[10px]">favorite</span>
+<span>2024 Biyahe Logger</span>
+</footer>
+</body></html>
