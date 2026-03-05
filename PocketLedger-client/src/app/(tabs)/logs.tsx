@@ -190,7 +190,7 @@ export default function LogsScreen() {
               <View style={styles.routeViz}>
                 <MaterialIcons name="radio-button-checked" size={16} color={Colors.primary} />
                 <View style={[styles.routeLine, { backgroundColor: theme.border }]} />
-                <MaterialIcons name="location-on" size={16} color={Colors.slate400} />
+                <MaterialIcons name="location-on" size={16} color={Colors.red500} />
               </View>
               <View style={styles.routePickers}>
                 <StationPicker label="ORIGIN STATION" value={origin} onSelect={handleOriginSelect} stations={LRT1_STATIONS} exclude={destination} />
@@ -199,7 +199,7 @@ export default function LogsScreen() {
               </View>
             </View>
 
-            <View style={[styles.cardDivider, { backgroundColor: theme.border }]} />
+            
 
             {/* Discount toggle */}
             <View style={styles.discountRow}>
