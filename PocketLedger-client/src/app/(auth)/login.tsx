@@ -14,6 +14,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Colors, FontSize, Radius } from "../constants/theme";
 
+import GoogleLogo  from "../assets/google.svg";
+
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -178,7 +180,7 @@ export default function LoginScreen() {
 
           {/* Google button */}
           <TouchableOpacity style={styles.secondaryButton} activeOpacity={0.8}>
-            <MaterialIcons name="language" size={20} color={Colors.slate700} />
+            <GoogleLogo/>
             <Text style={styles.secondaryButtonText}>Continue with Google</Text>
           </TouchableOpacity>
 
