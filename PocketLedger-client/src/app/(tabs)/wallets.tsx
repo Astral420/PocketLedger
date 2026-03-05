@@ -26,6 +26,8 @@ const CATEGORIES = [
   { id: "others", label: "Others", sub: "Miscellaneous", icon: "more-horiz", iconBg: Colors.slate100, iconColor: Colors.slate500, default: "1000" },
 ];
 
+const isIOS26 = Platform.OS === "ios" && parseInt(String(Platform.Version), 10) >= 26;
+
 export default function BudgetSetupScreen() {
   const { theme } = useThemeContext();
   const [freq, setFreq] = useState<Frequency>("Monthly");
@@ -145,7 +147,10 @@ export default function BudgetSetupScreen() {
         </ScrollView>
 
         {/* ── Sticky Save button ── */}
-        <View style={[styles.footer, { backgroundColor: theme.bg, borderTopColor: theme.border }]}>
+        <View style={[
+          styles.footer, 
+          { backgroundColor: theme.bg, borderTopColor: theme.border, paddingBottom: isIOS26 ? 12 + 60 : 12 }
+        ]}>
           <TouchableOpacity
             style={[styles.saveBtn, remaining < 0 && styles.saveBtnWarning]}
             activeOpacity={0.85}
