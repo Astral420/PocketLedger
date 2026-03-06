@@ -66,3 +66,20 @@ export const deleteAllUserRefreshTokens = async (userId: string) => {
   `;
   await pool.query(query, [userId]);
 };
+
+export const revokeRefreshToken = async (userId: string, tokenHash: string) => {
+  const query = `
+    UPDATE refresh_tokens SET revoked_at = NOW()
+    WHERE user_id = $1 AND token_hash = $2
+    AND revoked_at IS NULL
+  `;
+  await pool.query(query, [userId, tokenHash]);
+}
+
+export const revokeAllUserRefreshTokens = async (userId: string) => {
+  const query = `
+   UPDATE refresh_tokens SET revoked_at NOW()
+   WHERE user_id = $1 AND revoked_at IS NULL
+  `;
+  await pool.query(query, [userId]);
+}
