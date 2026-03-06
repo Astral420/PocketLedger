@@ -140,3 +140,17 @@ export async function registerAPI(full_name: string, email: string, password: st
 
   return res.json();
 }
+
+export async function logoutAPI (){
+  const refreshToken = await getRefreshToken();
+
+  if (refreshToken){
+    await apiFetch("/auth/logout"), {
+      method: "POST",
+      skipAuth: true,
+      body: JSON.stringify({ refreshToken }),
+    };
+    }
+    await clearTokens();
+  }
+  
