@@ -14,8 +14,14 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Colors, FontSize, Radius } from "../constants/theme";
 
+import { Portal, Snackbar } from "react-native-paper";
+import GoogleLogo  from "../assets/google.svg";
+import { loginAPI } from "../services/api";
+
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
@@ -48,9 +54,18 @@ export default function LoginScreen() {
     return valid;
   };
 
-  const handleLogin = () => {
-    if (validate()) {
+  const handleLogin = async () => {
+    if (!validate()) return;
+    try{
+      setLoading(true);
+      setError("");
+      await loginAPI(email.trim(), password);
       router.replace("/(tabs)");
+
+    } catch (e:any){
+      setError(e?.message ?? "Invalid Credentials.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -163,11 +178,12 @@ export default function LoginScreen() {
               styles.primaryButton,
               (!email || !password) && styles.primaryButtonDisabled,
             ]}
-            onPress={handleLogin}
+            onPress={handleLogin} disabled={loading}
             activeOpacity={0.85}
           >
             <Text style={styles.primaryButtonText}>Login</Text>
           </TouchableOpacity>
+          
 
           {/* Divider */}
           <View style={styles.divider}>
@@ -178,7 +194,7 @@ export default function LoginScreen() {
 
           {/* Google button */}
           <TouchableOpacity style={styles.secondaryButton} activeOpacity={0.8}>
-            <MaterialIcons name="language" size={20} color={Colors.slate700} />
+            <GoogleLogo/>
             <Text style={styles.secondaryButtonText}>Continue with Google</Text>
           </TouchableOpacity>
 
@@ -194,6 +210,17 @@ export default function LoginScreen() {
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Portal>
+        <Snackbar
+          visible={!!error}
+          onDismiss={() => setError("")}
+          duration={3000}
+          style={{ backgroundColor: Colors.red500 }}
+        >
+          {error}
+        </Snackbar>
+      </Portal>
     </SafeAreaView>
   );
 }

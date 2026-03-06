@@ -92,10 +92,6 @@ export default function SplashScreen() {
         <Animated.View style={[styles.progressSection, { opacity: taglineFade }]}>
           <View style={styles.progressHeader}>
             <Text style={styles.progressLabel}>INITIALISING</Text>
-            <Animated.Text style={[styles.progressPct, { color: LIGHT.textMuted }]}>
-              {/* static 30% label matching HTML reference */}
-              30%
-            </Animated.Text>
           </View>
           <View style={[styles.progressTrack, { backgroundColor: Colors.slate200 }]}>
             <Animated.View

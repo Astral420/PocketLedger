@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Colors, FontSize, Radius } from "../constants/theme";
+import { registerAPI, loginAPI } from "../services/api";
 
 // Light-mode constants — auth screens always render in light mode
 const LIGHT = {
@@ -32,6 +33,8 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
@@ -47,11 +50,22 @@ export default function RegisterScreen() {
     return Object.keys(e).length === 0;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!validate()) return;
-    Alert.alert("Success!", "Account created. Welcome to PocketLedger 🎉", [
-      { text: "Continue", onPress: () => router.replace("/(tabs)") },
-    ]);
+    try {
+      setLoading(true);
+      setApiError("");
+      await registerAPI(name.trim(), email.trim(), password);
+      await loginAPI(email.trim(), password);
+      
+      router.replace("/(tabs)");
+
+    } catch (e: any) {
+      setApiError(e.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+    
   };
 
   const borderColor = (field: string) => {
@@ -80,8 +94,18 @@ export default function RegisterScreen() {
 
             {/* ── Header ── */}
             <View style={styles.headerSection}>
-              <View style={styles.iconCircle}>
-                <MaterialIcons name="directions-bus" size={30} color={Colors.primary} />
+              {/* Splash-style logo group */}
+              <View style={styles.logoWrap}>
+                {/* Glow halo */}
+                <View style={styles.glow} />
+                {/* Main icon tile */}
+                <View style={styles.iconTile}>
+                  <MaterialIcons name="airport-shuttle" size={48} color={Colors.white} />
+                  {/* Badge floater */}
+                  <View style={[styles.badge, { backgroundColor: Colors.white }]}>
+                    <MaterialIcons name="payments" size={16} color={Colors.primary} />
+                  </View>
+                </View>
               </View>
               <Text style={[styles.appName, { color: LIGHT.text }]}>PocketLedger</Text>
               <Text style={[styles.subTitle, { color: LIGHT.textMuted }]}>
@@ -263,14 +287,48 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     alignItems: "center",
   },
-  iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: `${Colors.primary}1a`,
+  // Splash-style logo
+  logoWrap: {
+    marginBottom: 16,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
+  },
+  glow: {
+    position: "absolute",
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: `${Colors.primary}1a`,
+  },
+  iconTile: {
+    width: 96,
+    height: 96,
+    backgroundColor: Colors.primary,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "3deg" }],
+    shadowColor: Colors.primary,
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
+  },
+  badge: {
+    position: "absolute",
+    bottom: -6,
+    right: -6,
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "-12deg" }],
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
   appName: {
     fontSize: FontSize["2xl"],
