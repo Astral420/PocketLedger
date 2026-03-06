@@ -78,7 +78,7 @@ export const revokeRefreshToken = async (userId: string, tokenHash: string) => {
 
 export const revokeAllUserRefreshTokens = async (userId: string) => {
   const query = `
-   UPDATE refresh_tokens SET revoked_at NOW()
+   UPDATE refresh_tokens SET revoked_at = NOW()
    WHERE user_id = $1 AND revoked_at IS NULL
   `;
   await pool.query(query, [userId]);

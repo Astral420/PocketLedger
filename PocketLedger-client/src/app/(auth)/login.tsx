@@ -215,6 +215,11 @@ export default function LoginScreen() {
         <Snackbar
           visible={!!error}
           onDismiss={() => setError("")}
+          theme={{
+            colors : {
+              inverseOnSurface: "#ffffff",
+            },
+          }}
           duration={3000}
           style={{ backgroundColor: Colors.red500 }}
         >

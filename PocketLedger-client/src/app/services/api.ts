@@ -21,6 +21,8 @@ export async function clearTokens(): Promise<void> {
   await SecureStore.deleteItemAsync("refresh_token");
 }
 
+
+
 type FetchOptions = RequestInit & { skipAuth?: boolean };
 
 const buildUrl = (path: string) => {
@@ -140,3 +142,48 @@ export async function registerAPI(full_name: string, email: string, password: st
 
   return res.json();
 }
+
+export async function logoutAPI(): Promise<void> {
+  const refreshToken = await getRefreshToken();
+
+  try {
+    if (refreshToken) {
+      await apiFetch("/auth/logout", {
+        method: "POST",
+        skipAuth: true,
+        body: JSON.stringify({ refreshToken }),
+      });
+    }
+  } finally {
+    await clearTokens();
+  }
+}
+
+export async function startSession(): Promise<boolean> {
+  const accessToken = await getAccessToken();
+  if (accessToken) return true;
+
+  const refreshToken = await getRefreshToken();
+  if (!refreshToken) return false;
+
+  const res = await apiFetch("/auth/refresh", {
+    method: "POST",
+    skipAuth: true,
+    body: JSON.stringify({ refreshToken }),
+  });
+
+  if (!res.ok) {
+    await clearTokens();
+    return false;
+  }
+
+  const data = await res.json();
+  if (!data?.accessToken || !data?.refreshToken) {
+    await clearTokens();
+    return false;
+  }
+
+  await storeTokens(data.accessToken, data.refreshToken);
+  return true;
+}
+  

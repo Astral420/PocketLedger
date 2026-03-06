@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { SettingRow } from "../components/SettingRow";
 import { useThemeContext } from "../contexts/ThemeContext";
 import { Colors, FontSize, Radius } from "../constants/theme";
+import { logoutAPI } from "../services/api";
 
 // ─── Static mock user ────────────────────────────────────────────────────────
 
@@ -28,6 +29,7 @@ const USER = {
 export default function SettingsScreen() {
   const { isDark, toggleDark, theme } = useThemeContext();
   const [notificationsOn, setNotificationsOn] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = () => {
     Alert.alert("Log out", "Are you sure you want to log out?", [
@@ -35,7 +37,15 @@ export default function SettingsScreen() {
       {
         text: "Log out",
         style: "destructive",
-        onPress: () => router.replace("/(auth)/login"),
+        onPress: async () => {
+          try {
+            setLoggingOut(true);
+            await logoutAPI();
+          } finally {
+            setLoggingOut(false);
+            router.replace("/(auth)/login");
+          }
+        },
       },
     ]);
   };
@@ -182,9 +192,9 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── Logout ── */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} disabled={loggingOut}>
           <MaterialIcons name="logout" size={20} color={Colors.red500} />
-          <Text style={styles.logoutText}>Log out</Text>
+          <Text style={styles.logoutText}>{loggingOut ? "Logging out..." : "Log out"}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
