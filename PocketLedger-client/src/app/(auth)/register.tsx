@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Colors, FontSize, Radius } from "../constants/theme";
+import { registerAPI, loginAPI } from "../services/api";
 
 // Light-mode constants — auth screens always render in light mode
 const LIGHT = {
@@ -32,6 +33,8 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
@@ -47,11 +50,22 @@ export default function RegisterScreen() {
     return Object.keys(e).length === 0;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!validate()) return;
-    Alert.alert("Success!", "Account created. Welcome to PocketLedger 🎉", [
-      { text: "Continue", onPress: () => router.replace("/(tabs)") },
-    ]);
+    try {
+      setLoading(true);
+      setApiError("");
+      await registerAPI(name.trim(), email.trim(), password);
+      await loginAPI(email.trim(), password);
+      
+      router.replace("/(tabs)");
+
+    } catch (e: any) {
+      setApiError(e.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+    
   };
 
   const borderColor = (field: string) => {

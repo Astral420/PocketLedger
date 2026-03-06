@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 
-const API_BASE = "http://YOUR_IP:3000/api/v1";
+const API_BASE = "http://192.168.3.18:3000/api/v1";
 
 
 export async function getAccessToken(): Promise<string | null> {
