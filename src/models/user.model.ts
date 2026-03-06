@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 export const createUser = async (full_name: string, email: string, password: string) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const query = `INSERT INTO users (full_name, email, password_hash) 
-                   VALUES ($1, $2, $3) RETURNING id, full_name, email, created_at`;
+                   VALUES ($1, $2, $3) RETURNING id, full_name, email, role ,created_at`;
 
     const values = [full_name, email, hashedPassword];
     const { rows } = await pool.query(query, values);
@@ -38,6 +38,19 @@ export const updateUserImage = async (id: string, profile_image: string | null) 
     const values = [id, profile_image];
     const { rows } = await pool.query(query, values);
     return rows[0];
+};
+
+
+export const getUserAuthById = async (id: string) => {
+  const query = `
+    SELECT id, full_name, email, role
+    FROM users
+    WHERE id = $1
+    LIMIT 1
+  `;
+
+  const { rows } = await pool.query(query, [id]);
+  return rows[0] ?? null;
 };
 
 

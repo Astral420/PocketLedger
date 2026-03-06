@@ -66,52 +66,53 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = async (req: Request, res: Response) => {
-  const { refreshToken } = req.body ?? {};
+  const bodyToken = req.body?.refreshToken ?? req.body?.refresh_token;
+  const headerToken = req.get("x-refresh-token");
+  const refreshToken =
+    typeof bodyToken === "string"
+      ? bodyToken
+      : typeof headerToken === "string"
+      ? headerToken
+      : null;
 
   try {
-    if(!refreshToken || typeof refreshToken !== "string") {
-      return res.status(400).json({error: "refreshToken is required"});
+    if (!refreshToken) {
+      return res.status(400).json({ error: "refreshToken is required" });
     }
 
     let payload: string | JwtPayload;
 
-    try{
-      payload = jwt.verify (refreshToken, process.env.JWT_REFRESH!);
+    try {
+      payload = jwt.verify(refreshToken, process.env.JWT_SECRET_REFRESH!);
     } catch {
-      return res.status(200).json({message: "Logged out." });
+      return res.status(200).json({ message: "Logged out." });
     }
 
-    if (typeof payload === "string" || !payload.sub){ 
-      return res.status(200).json({ message: "Logged out."}); 
+    if (typeof payload === "string" || !payload.sub) {
+      return res.status(200).json({ message: "Logged out." });
     }
 
     const userId = String(payload.sub);
     const activeTokens = await findRefreshToken(userId);
 
-    for (const tokenRow of activeTokens){
-      const matchedToken = await bcrypt.compare (refreshToken, tokenRow.token_hash);
-      if (matchedToken){
+    for (const tokenRow of activeTokens) {
+      const matchedToken = await bcrypt.compare(refreshToken, tokenRow.token_hash);
+      if (matchedToken) {
         await revokeRefreshToken(userId, tokenRow.token_hash);
         break;
       }
     }
 
-    return res.status (200).json(
-      {
-        message: "Log out is successful!"
-      }
-    );
+    return res.status(200).json({
+      message: "Log out is successful!",
+    });
   } catch (err) {
-
-    return res.status (500).json(
-      {
+    return res.status(500).json({
         error: "Internal server error",
-        message: err
-      }
-    )
-    
+        message: err,
+      });
   }
-}
+};
 
 export const refresh = async (req: Request, res: Response) => {
   try {
@@ -168,4 +169,3 @@ export const refresh = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Internal server error", message: err });
   }
 };
-
