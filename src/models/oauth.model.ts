@@ -17,8 +17,8 @@ export const createOAuthAccount = async (params: {
     email: string;
 }) => {
     const query = `
-    INSERT INTO oauth_accounts ON CONFLICT (user_id, provider, provider_user_id, email)
-    VALUES ($1, $2, $3, $4)
+    INSERT INTO oauth_accounts (user_id, provider, provider_user_id, email)
+    VALUES ($1, $2, $3, $4) ON CONFLICT (provider, provider_user_id)
     DO UPDATE SET email = EXCLUDED.email
     RETURNING id, user_id, provider, provider_user_id, email, created_at
     `;

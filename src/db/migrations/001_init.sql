@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
   full_name     TEXT NULL,
   email         CITEXT NOT NULL UNIQUE,
   password_hash TEXT NULL, -- nullable if Google-only accounts exist
+  role TEXT NOT NULL DEFAULT 'user',
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
