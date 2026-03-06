@@ -46,7 +46,7 @@ export default function DashboardScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── Balance Card ── */}
-        <View style={[styles.balanceSection, { backgroundColor: isDark ? Colors.primary : Colors.backgroundLight }]}>
+        <View style={[styles.balanceSection, { backgroundColor: isDark ? Colors.backgroundDark : Colors.backgroundLight }]}>
           <Text style={[styles.balanceLabel, { color: isDark ? "rgba(255,255,255,0.75)" : Colors.slate900 }]}>Total Balance</Text>
           <Text style={[styles.balanceAmount, { color: isDark ? Colors.white : Colors.slate900 }]}>₱ 12,450.00</Text>
           <View style={[styles.badge, { backgroundColor: isDark ? "rgba(255,255,255,0.15)" : Colors.slate200 }]}>

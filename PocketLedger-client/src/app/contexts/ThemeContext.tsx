@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useColorScheme } from "react-native";
+import * as SecureStore from "expo-secure-store";
 import { Colors } from "../constants/theme";
 
 // ─── Theme values ─────────────────────────────────────────────────────────────
@@ -17,7 +18,7 @@ export type ThemeColors = {
 function buildTheme(dark: boolean): ThemeColors {
   return {
     isDark: dark,
-    bg: dark ? Colors.backgroundDark : Colors.backgroundLight,
+    bg: dark ? Colors.backgroundDark: Colors.backgroundLight,
     card: dark ? Colors.slate800 : Colors.white,
     border: dark ? Colors.slate700 : Colors.slate200,
     text: dark ? Colors.white : Colors.slate900,
@@ -46,11 +47,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme();
   const [overrideDark, setOverrideDark] = useState<boolean | null>(null);
 
+  useEffect(() => {
+    SecureStore.getItemAsync("theme_preference").then((pref) => {
+      if (pref === "dark") setOverrideDark(true);
+      else if (pref === "light") setOverrideDark(false);
+    });
+  }, []);
+
   // Use manual override if set, otherwise follow system
   const isDark = overrideDark !== null ? overrideDark : systemScheme === "dark";
   const theme = buildTheme(isDark);
 
-  const toggleDark = () => setOverrideDark((prev) => !(prev !== null ? prev : isDark));
+  const toggleDark = () => {
+    const newVal = !isDark;
+    setOverrideDark(newVal);
+    SecureStore.setItemAsync("theme_preference", newVal ? "dark" : "light").catch(console.error);
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, isDark, toggleDark }}>
