@@ -9,6 +9,7 @@ import {
 import { router } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Colors, FontSize, Radius } from "../constants/theme";
+import { startSession } from "../services/api";
 
 const { width } = Dimensions.get("window");
 
@@ -28,7 +29,8 @@ export default function SplashScreen() {
   const footerFade = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Sequence: logo pops in → tagline fades → progress animates → navigate
+    let isMounted = true;
+    
     Animated.sequence([
       Animated.parallel([
         Animated.timing(fadeIn, { toValue: 1, duration: 600, useNativeDriver: true }),
@@ -39,10 +41,16 @@ export default function SplashScreen() {
         Animated.timing(progress, { toValue: 1, duration: 1800, useNativeDriver: false }),
         Animated.timing(footerFade, { toValue: 1, duration: 600, useNativeDriver: true }),
       ]),
-    ]).start(() => {
-      // Navigate to login after loading completes
-      setTimeout(() => router.replace("/(auth)/login"), 300);
+    ]).start(async () => {
+      const hasSession = await startSession();
+
+      if(!isMounted) return;
+      router.replace(hasSession ? "/(tabs)" : "/(auth)/login");
     });
+
+      return () => {
+        isMounted = false;
+      };
   }, []);
 
   const progressWidth = progress.interpolate({
