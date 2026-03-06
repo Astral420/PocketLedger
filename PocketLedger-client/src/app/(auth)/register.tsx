@@ -116,6 +116,14 @@ export default function RegisterScreen() {
             {/* ── Form ── */}
             <View style={styles.form}>
 
+              {/* API Error Display */}
+              {!!apiError && (
+                <View style={[styles.apiErrorBox, { backgroundColor: `${Colors.red500}1a`, borderColor: Colors.red500 }]}>
+                  <MaterialIcons name="error-outline" size={20} color={Colors.red500} />
+                  <Text style={styles.apiErrorDisplay}>{apiError}</Text>
+                </View>
+              )}
+
               {/* Full Name */}
               <View style={styles.fieldGroup}>
                 <Text style={[styles.label, { color: LIGHT.text }]}>Full Name</Text>
@@ -407,6 +415,23 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: FontSize.base,
     fontWeight: "700",
+  },
+
+  // API Error
+  apiErrorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    gap: 8,
+    marginBottom: 4,
+  },
+  apiErrorDisplay: {
+    flex: 1,
+    color: Colors.red500,
+    fontSize: FontSize.sm,
+    fontWeight: "500",
   },
 
   // Footer divider
