@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy } from 'passport-google-oauth20';
 import { getOAuthAccount, createOAuthAccount } from '../models/oauth.model';
-import { getUserByEmail, createOAuthUser, updateUserImage } from '../models/user.model';
+import { getUserByEmail, createOAuthUser, updateUserImage, markUserEmailVerified } from '../models/user.model';
 
 
 export function setupPassport() {
@@ -35,6 +35,7 @@ export function setupPassport() {
                     const existingUser = email ? await getUserByEmail(email) : null;
                     if(existingUser){
                         userId = existingUser.id;
+                        await markUserEmailVerified(userId);
 
                     } else {
                         const newUser = await createOAuthUser(displayName, email , avatarUrl);
