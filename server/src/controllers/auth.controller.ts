@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { createUser, getUserAuthById, getUserByEmail } from "../models/user.model";
+import { createUser, getUserById, getUserByEmail } from "../models/user.model";
 import {
   deleteRefreshToken,
   findRefreshToken,
@@ -213,7 +213,7 @@ export const googleOAuthExchange = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid or expired OAuth code" });
     }
 
-    const user = await getUserAuthById(userId);
+    const user = await getUserById(userId);
     if (!user) {
       return res.status(401).json({ error: "User not found" });
     }

@@ -23,7 +23,6 @@ const LINES = [
   { id: "lrt1", label: "LRT-1", color: "Green" },
   { id: "lrt2", label: "LRT-2", color: "Blue" },
   { id: "mrt3", label: "MRT-3", color: "Yellow" },
-  { id: "mrt7", label: "MRT-7", color: "Red" },
 ];
 
 const LRT1_STATIONS = [

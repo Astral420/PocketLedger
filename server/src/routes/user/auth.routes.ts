@@ -10,11 +10,7 @@ import {
 } from '../../controllers/auth.controller';
 import { registerValidation, validateRequest } from '../../middlewares/helper/validation.middleware';
 
-
 import passport from 'passport';
-
-
-
 const router = Router();
 
 router.post ('/register', registerValidation, validateRequest, register);
