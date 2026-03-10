@@ -66,5 +66,5 @@ const styles = StyleSheet.create({
   sub: { fontSize: FontSize.sm, marginTop: 2 },
   right: { flexDirection: "row", alignItems: "center" },
   peso: { fontSize: FontSize.base, marginRight: 4 },
-  amountInput: { fontSize: FontSize.base, minWidth: 80, textAlign: "right" },
+  amountInput: { fontSize: FontSize.base, minWidth: 80, textAlign: "right", padding: 0, margin: 0 },
 });

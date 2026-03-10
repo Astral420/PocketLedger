@@ -85,7 +85,7 @@ export default function BudgetSetupScreen() {
                 value={totalBudget}
                 onChangeText={setTotalBudget}
                 keyboardType="numeric"
-                textAlign="center"
+                textAlign="left"
                 placeholder="0"
                 placeholderTextColor={Colors.slate300}
               />
@@ -197,9 +197,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   totalLabel: { fontSize: FontSize.sm, fontWeight: "700", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 12 },
-  totalInputRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  totalPeso: { fontSize: FontSize["4xl"], fontWeight: "700", lineHeight: 52 },
-  totalInput: { fontSize: FontSize["4xl"], fontWeight: "700", minWidth: 160, lineHeight: 52 },
+  totalInputRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "center", marginBottom: 20 },
+  totalPeso: { fontSize: FontSize["4xl"], fontWeight: "700", marginRight: 8 },
+  totalInput: { fontSize: FontSize["4xl"], fontWeight: "700", minWidth: 40, padding: 0, margin: 0 },
   progressBar: { width: "100%", height: 6, borderRadius: Radius.full, overflow: "hidden", marginBottom: 8 },
   progressFill: { height: "100%", borderRadius: Radius.full },
   progressLabels: { flexDirection: "row", justifyContent: "space-between", width: "100%" },
