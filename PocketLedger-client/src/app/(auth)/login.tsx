@@ -16,7 +16,7 @@ import { Colors, FontSize, Radius } from "../constants/theme";
 
 import { Portal, Snackbar } from "react-native-paper";
 import GoogleLogo  from "../assets/google.svg";
-import { loginAPI } from "../services/api";
+import { loginAPI, googleOAuthAPI } from "../services/api";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -64,6 +64,19 @@ export default function LoginScreen() {
 
     } catch (e:any){
       setError(e?.message ?? "Invalid Credentials.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      await googleOAuthAPI();
+      router.replace("/(tabs)");
+    } catch (e: any) {
+      setError(e?.message ?? "Google login failed");
     } finally {
       setLoading(false);
     }
@@ -193,7 +206,7 @@ export default function LoginScreen() {
           </View>
 
           {/* Google button */}
-          <TouchableOpacity style={styles.secondaryButton} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.secondaryButton} activeOpacity={0.8} onPress={handleGoogleLogin} disabled={loading}>
             <GoogleLogo/>
             <Text style={styles.secondaryButtonText}>Continue with Google</Text>
           </TouchableOpacity>

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   full_name     TEXT NULL,
   email         CITEXT NOT NULL UNIQUE,
+  profile_image TEXT NULL,
   password_hash TEXT NULL, -- nullable if Google-only accounts exist
   role TEXT NOT NULL DEFAULT 'user',
   email_verified BOOLEAN NOT NULL DEFAULT FALSE,

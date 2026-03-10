@@ -12,6 +12,19 @@ export const createUser = async (full_name: string, email: string, password: str
     return rows[0];
 };
 
+export const createOAuthUser = async (full_name: string | null, email: string, profileImage: string | null ) => {
+    const query = `
+       INSERT INTO users (full_name, email , password_hash , profile_image)
+       VALUES ($1, $2, NULL, $3)
+       RETURNING id, full_name, email, profile_image, created_at
+    
+    `
+    const values = [full_name, email, profileImage];
+    const { rows } = await pool.query(query, values);
+    return rows[0];
+
+}
+
 export const getUserByEmail = async (email: string) => {
     const query = "SELECT * FROM users WHERE email = $1";
     const values = [email];

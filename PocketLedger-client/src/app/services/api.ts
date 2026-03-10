@@ -1,6 +1,8 @@
 import * as SecureStore from "expo-secure-store";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
 
-const API_BASE = "http://192.168.3.18:3000/api/v1";
+const API_BASE = "http://localhost:3000/api/v1";
 
 
 export async function getAccessToken(): Promise<string | null> {
@@ -120,6 +122,38 @@ export async function loginAPI(email: string, password: string) {
 
   if (!res.ok) {
     const message = await parseErrorMessage(res, "Login failed");
+    throw new Error(message);
+  }
+
+  const data = await res.json();
+  await storeTokens(data.accessToken, data.refreshToken);
+  return data.user;
+}
+
+export async function googleOAuthAPI(){
+  const returnUrl = Linking.createURL("oauth/callback");
+  const authUrl = buildUrl("auth/google");
+
+  const result = await WebBrowser.openAuthSessionAsync (authUrl, returnUrl);
+
+  if(result.type !== "success" || !result.url){
+    throw new Error ("Google login was cancelled");
+  }
+
+  const parsedUrl = Linking.parse(result.url);
+  const code = parsedUrl.queryParams?.code;
+
+  if(typeof code !== "string") {
+    throw new Error("Google login did not return a code.");
+  }
+  const res = await apiFetch("/auth/google/exchange", {
+    method: "POST",
+    skipAuth: true,
+    body: JSON.stringify ({code}),
+  });
+
+  if (!res.ok) {
+    const message = await parseErrorMessage(res, "Google login failed");
     throw new Error(message);
   }
 
