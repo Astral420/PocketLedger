@@ -14,7 +14,6 @@ import { router } from "expo-router";
 import { SettingRow } from "../components/SettingRow";
 import { useThemeContext } from "../contexts/ThemeContext";
 import { Colors, FontSize, Radius } from "../constants/theme";
-import { logoutAPI } from "../services/api";
 
 // ─── Static mock user ────────────────────────────────────────────────────────
 
@@ -29,7 +28,6 @@ const USER = {
 export default function SettingsScreen() {
   const { isDark, toggleDark, theme } = useThemeContext();
   const [notificationsOn, setNotificationsOn] = useState(true);
-  const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = () => {
     Alert.alert("Log out", "Are you sure you want to log out?", [
@@ -37,15 +35,7 @@ export default function SettingsScreen() {
       {
         text: "Log out",
         style: "destructive",
-        onPress: async () => {
-          try {
-            setLoggingOut(true);
-            await logoutAPI();
-          } finally {
-            setLoggingOut(false);
-            router.replace("/(auth)/login");
-          }
-        },
+        onPress: () => router.replace("/(auth)/login"),
       },
     ]);
   };
@@ -84,7 +74,7 @@ export default function SettingsScreen() {
               {USER.email}
             </Text>
           </View>
-          <TouchableOpacity
+         {/* <TouchableOpacity
             style={[
               styles.editProfileBtn,
               { borderColor: theme.border, backgroundColor: theme.bg },
@@ -93,7 +83,7 @@ export default function SettingsScreen() {
             <Text style={[styles.editProfileText, { color: theme.text }]}>
               Edit Profile
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* ── Preferences ── */}
@@ -192,9 +182,9 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── Logout ── */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} disabled={loggingOut}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <MaterialIcons name="logout" size={20} color={Colors.red500} />
-          <Text style={styles.logoutText}>{loggingOut ? "Logging out..." : "Log out"}</Text>
+          <Text style={styles.logoutText}>Log out</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
