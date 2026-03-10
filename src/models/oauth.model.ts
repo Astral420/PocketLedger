@@ -14,7 +14,7 @@ export const createOAuthAccount = async (params: {
     userID: string;
     provider: 'google';
     providerUserID: string;
-    email: string;
+    email: string | null;
 }) => {
     const query = `
     INSERT INTO oauth_accounts (user_id, provider, provider_user_id, email)

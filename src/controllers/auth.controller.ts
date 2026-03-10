@@ -1,13 +1,17 @@
 import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { createUser, getUserByEmail } from "../models/user.model";
+import { createUser, getUserAuthById, getUserByEmail } from "../models/user.model";
 import {
   deleteRefreshToken,
   findRefreshToken,
   revokeRefreshToken,
   storeRefreshToken,
 } from "../models/helper/refreshToken.model";
+import {
+  consumeOAuthLoginCode,
+  createOAuthLoginCode,
+} from "../models/helper/oauthLoginCode.model";
 
 const signAccessToken = (userId: string) =>
   jwt.sign({ sub: userId }, process.env.JWT_SECRET!, { expiresIn: "15m" });
@@ -39,6 +43,9 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await getUserByEmail(email);
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
+    if (!user.password_hash) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) return res.status(401).json({ error: "Invalid credentials" });
@@ -168,4 +175,77 @@ export const refresh = async (req: Request, res: Response) => {
   } catch (err) {
     return res.status(500).json({ error: "Internal server error", message: err });
   }
+};
+
+export const googleOAuthCallback = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as { userId?: string } | undefined;
+    if (!user?.userId) {
+      return res.status(401).json({
+        error: "Google OAuth failed",
+        message: "Authenticated user payload is missing",
+      });
+    }
+
+    const code = await createOAuthLoginCode(user.userId);
+    const redirectUrl = `${process.env.OAUTH_SUCCESS_REDIRECT}?code=${encodeURIComponent(code)}`;
+    return res.redirect(redirectUrl);
+    
+    
+  } catch (error) {
+    return res.status(500).json({
+       error: "Internal server error", 
+       message: error 
+      });
+  }
+
+};
+
+export const googleOAuthExchange = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.body ?? {};
+    if (!code || typeof code !== "string") {
+      return res.status(400).json({ error: "code is required" });
+    }
+
+    const userId = await consumeOAuthLoginCode(code);
+    if (!userId) {
+      return res.status(401).json({ error: "Invalid or expired OAuth code" });
+    }
+
+    const user = await getUserAuthById(userId);
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    const accessToken = signAccessToken(user.id);
+    const refreshToken = signRefreshToken(user.id);
+
+    await storeRefreshToken(user.id, refreshToken, {
+      userAgent: req.get("user-agent") ?? null,
+      ipAddress: req.ip ?? null,
+    });
+
+    return res.status(200).json({
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Internal server error",
+      message: error,
+    });
+  }
+};
+
+export const OAuthFailure = async (req: Request, res: Response) => {
+  return res.status(401).json({
+    error: "Google OAuth failed",
+    message: "Google OAuth failed",
+  });
 };
