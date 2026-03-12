@@ -35,8 +35,7 @@ INSERT INTO transit_lines (code, name, color, is_active)
 VALUES
   ('LRT-1', 'LRT Line 1',  '#1E88E5', TRUE),
   ('LRT-2', 'LRT Line 2',  '#7B1FA2', TRUE),
-  ('MRT-3', 'MRT Line 3',  '#2E7D32', TRUE),
-  ('MRT-7', 'MRT Line 7',  '#8B0000', TRUE)
+  ('MRT-3', 'MRT Line 3',  '#2E7D32', TRUE)
 ON CONFLICT (code) DO NOTHING;
 
 -- Helper CTE to fetch line IDs
@@ -44,8 +43,7 @@ WITH line_ids AS (
   SELECT
     (SELECT id FROM transit_lines WHERE code='LRT-1') AS lrt1,
     (SELECT id FROM transit_lines WHERE code='LRT-2') AS lrt2,
-    (SELECT id FROM transit_lines WHERE code='MRT-3') AS mrt3,
-    (SELECT id FROM transit_lines WHERE code='MRT-7') AS mrt7
+    (SELECT id FROM transit_lines WHERE code='MRT-3') AS mrt3
 )
 SELECT 1;
 
@@ -128,29 +126,6 @@ JOIN (VALUES
   ('Ayala', 11),
   ('Magallanes', 12),
   ('Taft Avenue', 13)
-) AS s(name, sort_order) ON TRUE
-ON CONFLICT (line_id, name) DO NOTHING;
-
--- MRT-7 stations (seed only; fares not available yet)
-WITH mrt7 AS (SELECT id AS line_id FROM transit_lines WHERE code='MRT-7')
-INSERT INTO transit_stations (line_id, name, sort_order, is_active)
-SELECT mrt7.line_id, s.name, s.sort_order, TRUE
-FROM mrt7
-JOIN (VALUES
-  ('North EDSA', 1),
-  ('Quezon Memorial Circle', 2),
-  ('University Avenue', 3),
-  ('Tandang Sora', 4),
-  ('Don Antonio', 5),
-  ('Batasan', 6),
-  ('Manggahan', 7),
-  ('Doña Carmen', 8),
-  ('Regalado Avenue', 9),
-  ('Mindanao Avenue', 10),
-  ('Quirino Highway', 11),
-  ('Sacred Heart', 12),
-  ('Tala', 13),
-  ('San Jose del Monte', 14)
 ) AS s(name, sort_order) ON TRUE
 ON CONFLICT (line_id, name) DO NOTHING;
 

@@ -1,7 +1,7 @@
 // auth.middleware.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { getUserAuthById } from "../models/user.model";
+import { getUserById } from "../models/user.model";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -13,28 +13,30 @@ export interface AuthRequest extends Request {
 }
 
 export const requireAuth = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.slice(7)
     : null;
 
   if (!token) {
-    return res.status(401).json({ error: "Authentication required" });
+    res.status(401).json({ error: "Authentication required" });
+    return;
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { sub: string };
 
-    const user = await getUserAuthById(decoded.sub);
+    const user = await getUserById(decoded.sub);
     if (!user) {
-      return res.status(401).json({ error: "User not found" });
+      res.status(401).json({ error: "User not found" });
+      return;
     }
 
-    req.user = {
+    (req as AuthRequest).user = {
       id: user.id,
       role: user.role,
       email: user.email,
@@ -43,6 +45,7 @@ export const requireAuth = async (
 
     next();
   } catch {
-    return res.status(401).json({ error: "Invalid or expired token" });
+    res.status(401).json({ error: "Invalid or expired token" });
+    return;
   }
 };

@@ -14,9 +14,9 @@ export const createUser = async (full_name: string, email: string, password: str
 
 export const createOAuthUser = async (full_name: string | null, email: string, profileImage: string | null ) => {
     const query = `
-       INSERT INTO users (full_name, email , password_hash , profile_image)
-       VALUES ($1, $2, NULL, $3)
-       RETURNING id, full_name, email, profile_image, created_at
+       INSERT INTO users (full_name, email , password_hash , profile_image, email_verified)
+       VALUES ($1, $2, NULL, $3, TRUE)
+       RETURNING id, full_name, email, profile_image, email_verified, created_at
     
     `
     const values = [full_name, email, profileImage];
@@ -47,21 +47,50 @@ export const deleteUser = async (id: string) => {
 
 export const updateUserImage = async (id: string, profile_image: string | null) => {
     const query = `UPDATE users SET profile_image = $2, updated_at = NOW() 
-                   WHERE id = $1 RETURNING id, profile_image, updated_at`;
+                   WHERE id = $1 RETURNING id, full_name, email, role, profile_image, updated_at`;
     const values = [id, profile_image];
     const { rows } = await pool.query(query, values);
-    return rows[0];
+    return rows[0] ?? null;
 };
 
+export const updateUser = async (id: string, full_name: string | null, email: string, password: string | null) => {
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+    const query = `
+    UPDATE users
+    SET full_name = $2,
+        password_hash = COALESCE($3, password_hash),
+        email = $4, 
+        updated_at = NOW()
+    WHERE id = $1
+    RETURNING id, full_name, email, profile_image, updated_at
+    `;
 
-export const getUserAuthById = async (id: string) => {
+    const values = [id, full_name, hashedPassword, email];
+    const { rows } = await pool.query (query, values);
+    return rows[0] ?? null;
+};
+
+export const getUserById = async (id: string) => {
   const query = `
-    SELECT id, full_name, email, role
+    SELECT id, full_name, email, role, profile_image, email_verified
     FROM users
     WHERE id = $1
     LIMIT 1
   `;
 
+  const { rows } = await pool.query(query, [id]);
+  return rows[0] ?? null;
+};
+
+// helper
+
+export const markUserEmailVerified = async (id: string) => {
+  const query = `
+    UPDATE users
+    SET email_verified = TRUE, updated_at = NOW()
+    WHERE id = $1
+    RETURNING id, email_verified, updated_at
+  `;
   const { rows } = await pool.query(query, [id]);
   return rows[0] ?? null;
 };

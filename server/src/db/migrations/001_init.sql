@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
   full_name     TEXT NULL,
   email         CITEXT NOT NULL UNIQUE,
   profile_image TEXT NULL,
+  profile_image_public_id TEXT NULL,
   password_hash TEXT NULL, -- nullable if Google-only accounts exist
   role TEXT NOT NULL DEFAULT 'user',
   email_verified BOOLEAN NOT NULL DEFAULT FALSE,

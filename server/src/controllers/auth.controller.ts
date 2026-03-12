@@ -1,17 +1,27 @@
 import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { createUser, getUserAuthById, getUserByEmail } from "../models/user.model";
+import { createUser, getUserById, getUserByEmail, markUserEmailVerified } from "../models/user.model";
+
 import {
   deleteRefreshToken,
   findRefreshToken,
   revokeRefreshToken,
   storeRefreshToken,
 } from "../models/helper/refreshToken.model";
+
 import {
   consumeOAuthLoginCode,
   createOAuthLoginCode,
 } from "../models/helper/oauthLoginCode.model";
+
+import { 
+  emailVerificationCode, 
+  consumeEmailVerificationCode 
+} from "../models/helper/emailVerificationCode.model";
+
+import { AuthRequest } from "../middlewares/auth.middleware";
+import { sendVerificationEmail } from "../config/smtpservice";
 
 const signAccessToken = (userId: string) =>
   jwt.sign({ sub: userId }, process.env.JWT_SECRET!, { expiresIn: "15m" });
@@ -27,6 +37,13 @@ export const register = async (req: Request, res: Response) => {
     if (existingUser) return res.status(409).json({ error: "User already exists" });
 
     const newUser = await createUser(full_name, email, password);
+
+    emailVerificationCode(newUser.id)
+      .then((code) => sendVerificationEmail(email, code))
+      .catch((err) => {
+        console.error("Error sending verification email:", err);
+      });
+
     res.status(201).json({ message: "User created successfully", userId: newUser.id });
   } catch (err) {
     return res.status(500).json({ error: "Internal server error", message: err });
@@ -213,7 +230,7 @@ export const googleOAuthExchange = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid or expired OAuth code" });
     }
 
-    const user = await getUserAuthById(userId);
+    const user = await getUserById(userId);
     if (!user) {
       return res.status(401).json({ error: "User not found" });
     }
@@ -249,3 +266,80 @@ export const OAuthFailure = async (req: Request, res: Response) => {
     message: "Google OAuth failed",
   });
 };
+
+export const sendVerification = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as AuthRequest).user?.id;
+    const userEmail = (req as AuthRequest).user?.email;
+    
+    if (!userId || !userEmail){
+      return res.status(401).json({
+        error: "Authentication Required.",
+
+      });
+    }
+    
+    const user = await getUserById(userId);
+    if (!user){
+      return res.status(401).json({
+        error: "User not found",
+      });
+    }
+    
+    if(user.email_verified){
+      return res.status(401).json({
+        error: "Email already verified",
+      });
+    }
+    
+    const code = await emailVerificationCode(userId);
+    await sendVerificationEmail(userEmail, code);
+
+    return res.status(200).json({
+      message: "Verification email sent successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Internal server error"
+    })
+  }
+};
+
+export const verifyEmail = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as AuthRequest).user?.id;
+
+    if(!userId){
+      return res.status(401).json({
+        error: "Authentication Required.",
+      });
+    }
+
+    const { code } = req.body ?? {};
+    if(!code || typeof code !== "string" || code.trim().length !== 6){
+      return res.status(400).json({
+        error: "6-digit verification code is required.",
+      });
+    }
+
+
+    const isVerified = await consumeEmailVerificationCode(userId, code);
+
+    if(!isVerified) {
+      return res.status(401).json({
+        error: "Invalid or expired verification code.",
+      });
+    }
+
+    await markUserEmailVerified(userId);
+
+    return res.status(200).json({
+      message: "Email verified successfully",
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}

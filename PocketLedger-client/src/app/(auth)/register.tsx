@@ -58,7 +58,10 @@ export default function RegisterScreen() {
       await registerAPI(name.trim(), email.trim(), password);
       await loginAPI(email.trim(), password);
       
-      router.replace("/(tabs)");
+      router.replace({
+        pathname:"/(auth)/verify",
+        params: { email: email.trim() }, 
+      });
 
     } catch (e: any) {
       setApiError(e.message || "Registration failed");

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,27 +7,59 @@ import {
   Switch,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useIsFocused } from "@react-navigation/native";
+import { Image } from "expo-image";
 import { SettingRow } from "../components/SettingRow";
 import { useThemeContext } from "../contexts/ThemeContext";
 import { Colors, FontSize, Radius } from "../constants/theme";
-
-// ─── Static mock user ────────────────────────────────────────────────────────
-
-const USER = {
-  name: "Juan dela Cruz",
-  email: "juan@example.com",
-  initials: "JD",
-};
-
-// ─── Component ────────────────────────────────────────────────────────────────
+import {
+  getCurrentUserAPI,
+  getUserInitials,
+  logoutAPI,
+  type CurrentUser,
+} from "../services/api";
 
 export default function SettingsScreen() {
   const { isDark, toggleDark, theme } = useThemeContext();
+  const isFocused = useIsFocused();
   const [notificationsOn, setNotificationsOn] = useState(true);
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    if (!isFocused) return;
+
+    let active = true;
+
+    const loadUser = async () => {
+      try {
+        setLoadingUser(true);
+        const currentUser = await getCurrentUserAPI();
+        if (active) {
+          setUser(currentUser);
+        }
+      } catch (error: any) {
+        if (active) {
+          Alert.alert("Profile", error?.message ?? "Failed to load profile.");
+        }
+      } finally {
+        if (active) {
+          setLoadingUser(false);
+        }
+      }
+    };
+
+    void loadUser();
+
+    return () => {
+      active = false;
+    };
+  }, [isFocused]);
 
   const handleLogout = () => {
     Alert.alert("Log out", "Are you sure you want to log out?", [
@@ -35,15 +67,28 @@ export default function SettingsScreen() {
       {
         text: "Log out",
         style: "destructive",
-        onPress: () => router.replace("/(auth)/login"),
+        onPress: async () => {
+          try {
+            await logoutAPI();
+          } finally {
+            router.replace("/(auth)/login");
+          }
+        },
       },
     ]);
   };
 
+  const openEditProfile = () => {
+    router.push("/edit-profile" as any);
+  };
+
+  const displayName = user?.full_name?.trim() || "Complete your profile";
+  const displayEmail = user?.email ?? "Loading...";
+  const initials = user ? getUserInitials(user) : "..";
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]}>
-      {/* ── Header ── */}
-      <View style={[styles.header, { borderBottomColor: theme.border }]}>
+      <View style={[styles.header, { borderBottomColor: theme.border }]}> 
         <Text style={[styles.headerTitle, { color: theme.text }]}>Settings</Text>
       </View>
 
@@ -51,7 +96,6 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Profile card ── */}
         <View
           style={[
             styles.profileCard,
@@ -59,37 +103,48 @@ export default function SettingsScreen() {
           ]}
         >
           <View style={styles.avatarWrap}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarInitials}>{USER.initials}</Text>
-            </View>
-            <TouchableOpacity style={styles.editBadge}>
+            <TouchableOpacity style={styles.avatarTap} onPress={openEditProfile} activeOpacity={0.85}>
+              {user?.profile_image ? (
+                <Image source={{ uri: user.profile_image }} style={styles.avatarImage} contentFit="cover" />
+              ) : (
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarInitials}>{initials}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.editBadge} onPress={openEditProfile}>
               <MaterialIcons name="edit" size={13} color={Colors.white} />
             </TouchableOpacity>
           </View>
+
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: theme.text }]}>
-              {USER.name}
-            </Text>
-            <Text style={[styles.profileEmail, { color: theme.textMuted }]}>
-              {USER.email}
-            </Text>
+            {loadingUser ? (
+              <ActivityIndicator color={Colors.primary} />
+            ) : (
+              <>
+                <Text style={[styles.profileName, { color: theme.text }]}>
+                  {displayName}
+                </Text>
+                <Text style={[styles.profileEmail, { color: theme.textMuted }]}> 
+                  {displayEmail}
+                </Text>
+              </>
+            )}
           </View>
-         {/* <TouchableOpacity
+              {/* 
+              <TouchableOpacity
             style={[
               styles.editProfileBtn,
               { borderColor: theme.border, backgroundColor: theme.bg },
             ]}
+            onPress={openEditProfile}
           >
-            <Text style={[styles.editProfileText, { color: theme.text }]}>
-              Edit Profile
-            </Text>
-          </TouchableOpacity> */}
+            <Text style={[styles.editProfileText, { color: theme.text }]}>Edit Profile</Text>
+          </TouchableOpacity>
+          */}
         </View>
 
-        {/* ── Preferences ── */}
-        <Text style={[styles.groupLabel, { color: theme.textMuted }]}>
-          PREFERENCES
-        </Text>
+        <Text style={[styles.groupLabel, { color: theme.textMuted }]}>PREFERENCES</Text>
         <View
           style={[
             styles.card,
@@ -146,10 +201,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {/* ── App info ── */}
-        <Text style={[styles.groupLabel, { color: theme.textMuted }]}>
-          APP INFO
-        </Text>
+        <Text style={[styles.groupLabel, { color: theme.textMuted }]}>APP INFO</Text>
         <View
           style={[
             styles.card,
@@ -181,7 +233,6 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {/* ── Logout ── */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <MaterialIcons name="logout" size={20} color={Colors.red500} />
           <Text style={styles.logoutText}>Log out</Text>
@@ -190,8 +241,6 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   safe: {
@@ -210,8 +259,6 @@ const styles = StyleSheet.create({
     paddingBottom: 96,
     paddingTop: 16,
   },
-
-  // Profile card
   profileCard: {
     marginHorizontal: 16,
     borderRadius: Radius.lg,
@@ -224,6 +271,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     position: "relative",
   },
+  avatarTap: {
+    borderRadius: 36,
+  },
   avatar: {
     width: 72,
     height: 72,
@@ -231,6 +281,12 @@ const styles = StyleSheet.create({
     backgroundColor: `${Colors.primary}1a`,
     alignItems: "center",
     justifyContent: "center",
+  },
+  avatarImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: `${Colors.primary}1a`,
   },
   avatarInitials: {
     fontSize: FontSize["2xl"],
@@ -253,6 +309,8 @@ const styles = StyleSheet.create({
   profileInfo: {
     alignItems: "center",
     marginBottom: 14,
+    minHeight: 44,
+    justifyContent: "center",
   },
   profileName: {
     fontSize: FontSize.md,
@@ -272,8 +330,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     fontWeight: "600",
   },
-
-  // Group
   groupLabel: {
     fontSize: FontSize.xs,
     fontWeight: "700",
@@ -289,8 +345,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 24,
   },
-
-  // Logout
   logoutBtn: {
     flexDirection: "row",
     alignItems: "center",
