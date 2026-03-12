@@ -12,25 +12,38 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useThemeContext } from "../contexts/ThemeContext";
+import { router, useLocalSearchParams } from "expo-router";
 import { Colors, FontSize, Radius } from "../constants/theme";
+import { sendVerificationAPI, verifyEmailAPI } from "../services/api";
+import { maskEmail } from "../helpers/emailMasker";
+
+// Light-mode constants: auth screens should not follow the app theme
+const LIGHT = {
+  bg: Colors.backgroundLight,
+  card: Colors.white,
+  border: Colors.slate200,
+  text: Colors.slate900,
+  textMuted: Colors.slate500,
+  input: Colors.white,
+  inputMuted: Colors.slate200,
+  surfaceMuted: Colors.slate200,
+  footerText: Colors.slate400,
+};
 
 export default function VerifyScreen() {
-  const { theme, isDark } = useThemeContext();
+  const { email } = useLocalSearchParams<{ email?: string }>();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputs = useRef<Array<TextInput | null>>([]);
 
   const [timeLeft, setTimeLeft] = useState(119); // 1:59 remaining in seconds
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  
 
   useEffect(() => {
     if (timeLeft <= 0) return;
-
-    const intervalId = setInterval(() => {
-      setTimeLeft(timeLeft - 1);
-    }, 1000);
-
-    return () => clearInterval(intervalId);
+    const id = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(id);
   }, [timeLeft]);
 
   const minutes = Math.floor(timeLeft / 60);
@@ -54,17 +67,43 @@ export default function VerifyScreen() {
     }
   };
 
-  const handleVerify = () => {
-    // Mock verifying and then routing to login or tabs
-    router.replace("/(tabs)");
+  const handleVerify = async () => {
+    const fullCode = code.join("");
+
+    if(fullCode.length < 6){
+      setError("Please enter all 6 digits.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      await verifyEmailAPI(fullCode);
+      router.replace("/(tabs)");
+
+    } catch (e: any) {
+      setError(e.message || "Verification Failed. Please Try Again,");
+    } finally {
+      setLoading(false);
+    }
+    
   };
 
-  const handleResend = () => {
-    setTimeLeft(119); // reset to 1:59
+  const handleResend = async () => {
+    try {
+      setError("");
+      await sendVerificationAPI();
+      setTimeLeft(119); // reset to 1:59
+      setCode(["", "", "", "", "", ""]);
+      inputs.current[0]?.focus();
+    } catch (e:any) {
+      setError(e.message || "Failed to resend code.");
+    }
+    
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: LIGHT.bg }]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -76,13 +115,13 @@ export default function VerifyScreen() {
               <TouchableOpacity
                 style={[
                   styles.backBtn,
-                  { backgroundColor: isDark ? Colors.slate800 : Colors.slate200 },
+                  { backgroundColor: LIGHT.border },
                 ]}
                 onPress={() => router.back()}
               >
-                <MaterialIcons name="arrow-back-ios" size={18} color={theme.text} />
+                <MaterialIcons name="arrow-back-ios" size={18} color={LIGHT.text} />
               </TouchableOpacity>
-              <Text style={[styles.headerTitle, { color: theme.text }]}>
+              <Text style={[styles.headerTitle, { color: LIGHT.text }]}>
                 Verification
               </Text>
               <View style={{ width: 40 }} />
@@ -90,17 +129,36 @@ export default function VerifyScreen() {
 
             {/* Title & Subtitle */}
             <View style={styles.titleContainer}>
-              <Text style={[styles.title, { color: theme.text }]}>
+              <Text style={[styles.title, { color: LIGHT.text }]}>
                 Check Your Email
               </Text>
-              <Text style={[styles.subtitle, { color: theme.textMuted }]}>
+              <Text style={[styles.subtitle, { color: LIGHT.textMuted }]}>
                 We've sent a 6-digit verification code to{" "}
-                <Text style={{ fontWeight: "600", color: theme.text }}>
-                  m***@skitrack.com
+                <Text style={{ fontWeight: "600", color: LIGHT.text }}>
+                  {maskEmail(email ?? "")}
                 </Text>
                 . Please enter it below to access your stats.
               </Text>
             </View>
+
+            {!!error && (
+              <View
+                style={[
+                  styles.apiErrorBox,
+                  {
+                    backgroundColor: `${Colors.red500}1a`,
+                    borderColor: Colors.red500,
+                  },
+                ]}
+              >
+                <MaterialIcons
+                  name="error-outline"
+                  size={20}
+                  color={Colors.red500}
+                />
+                <Text style={styles.apiErrorDisplay}>{error}</Text>
+              </View>
+            )}
 
             {/* Code inputs */}
             <View style={styles.codeContainer}>
@@ -111,13 +169,9 @@ export default function VerifyScreen() {
                   style={[
                     styles.codeInput,
                     {
-                      backgroundColor: isDark ? Colors.slate900 : Colors.white,
-                      borderColor: digit
-                        ? Colors.primary
-                        : isDark
-                        ? Colors.slate800
-                        : Colors.slate200,
-                      color: theme.text,
+                      backgroundColor: LIGHT.input,
+                      borderColor: digit ? Colors.primary : LIGHT.inputMuted,
+                      color: LIGHT.text,
                     },
                   ]}
                   value={digit}
@@ -136,14 +190,14 @@ export default function VerifyScreen() {
                 <View
                   style={[
                     styles.timerBlock,
-                    { backgroundColor: isDark ? `${Colors.slate800}80` : `${Colors.slate200}80` },
+                    { backgroundColor: `${LIGHT.surfaceMuted}80` },
                   ]}
                 >
-                  <Text style={[styles.timerValue, { color: theme.text }]}>
+                  <Text style={[styles.timerValue, { color: LIGHT.text }]}>
                     {minutes < 10 ? `0${minutes}` : minutes}
                   </Text>
                 </View>
-                <Text style={[styles.timerLabel, { color: theme.textMuted }]}>
+                <Text style={[styles.timerLabel, { color: LIGHT.textMuted }]}>
                   Min
                 </Text>
               </View>
@@ -152,25 +206,25 @@ export default function VerifyScreen() {
                 <View
                   style={[
                     styles.timerBlock,
-                    { backgroundColor: isDark ? `${Colors.slate800}80` : `${Colors.slate200}80` },
+                    { backgroundColor: `${LIGHT.surfaceMuted}80` },
                   ]}
                 >
-                  <Text style={[styles.timerValue, { color: theme.text }]}>
+                  <Text style={[styles.timerValue, { color: LIGHT.text }]}>
                     {seconds < 10 ? `0${seconds}` : seconds}
                   </Text>
                 </View>
-                <Text style={[styles.timerLabel, { color: theme.textMuted }]}>
+                <Text style={[styles.timerLabel, { color: LIGHT.textMuted }]}>
                   Sec
                 </Text>
               </View>
             </View>
 
             <View style={styles.resendContainer}>
-              <Text style={[styles.resendText, { color: theme.textMuted }]}>
+              <Text style={[styles.resendText, { color: LIGHT.textMuted }]}>
                 Didn't receive the code?{" "}
               </Text>
-              <TouchableOpacity onPress={handleResend}>
-                <Text style={styles.resendAction}>Resend code</Text>
+              <TouchableOpacity onPress={ timeLeft > 0 ? undefined : handleResend} disabled={timeLeft > 0}>
+                <Text style={[styles.resendAction, timeLeft > 0 && {opacity: 0.4}]}>Resend code</Text>
               </TouchableOpacity>
             </View>
 
@@ -182,7 +236,7 @@ export default function VerifyScreen() {
               >
                 <Text style={styles.verifyBtnText}>Verify & Continue</Text>
               </TouchableOpacity>
-              <Text style={[styles.footerText, { color: isDark ? Colors.slate600 : Colors.slate400 }]}>
+              <Text style={[styles.footerText, { color: LIGHT.footerText }]}>
                 By continuing, you agree to our Terms of Service and Privacy Policy.
                 Your security is our priority at PocketLedger.
               </Text>
@@ -234,6 +288,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
     maxWidth: "90%",
+  },
+  apiErrorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    gap: 8,
+    marginBottom: 16,
+  },
+  apiErrorDisplay: {
+    flex: 1,
+    color: Colors.red500,
+    fontSize: FontSize.sm,
+    fontWeight: "500",
   },
   codeContainer: {
     flexDirection: "row",

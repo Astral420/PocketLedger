@@ -7,10 +7,13 @@ import {
   googleOAuthCallback,
   googleOAuthExchange,
   OAuthFailure,
+  sendVerification,
+  verifyEmail,
 } from '../../controllers/auth.controller';
 import { registerValidation, validateRequest } from '../../middlewares/helper/validation.middleware';
 
 import passport from 'passport';
+import { requireAuth } from '../../middlewares/auth.middleware';
 const router = Router();
 
 router.post ('/register', registerValidation, validateRequest, register);
@@ -18,6 +21,8 @@ router.post ('/login', login);
 router.post('/refresh', refresh);
 router.post('/logout', logout);
 router.post('/google/exchange', googleOAuthExchange);
+router.post('/send-verification', requireAuth, sendVerification);
+router.post('/verify-email', requireAuth, verifyEmail);
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
 router.get(

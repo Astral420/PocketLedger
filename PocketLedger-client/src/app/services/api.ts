@@ -207,6 +207,30 @@ export async function registerAPI(full_name: string, email: string, password: st
   return res.json();
 }
 
+export async function sendVerificationAPI(): Promise<void> {
+  const res = await apiFetch("/auth/send-verification", {
+    method: "POST",
+  });
+
+  if (!res.ok) {
+    const message = await parseErrorMessage(res, "Failed to send verification code");
+    throw new Error(message);
+  }
+}
+
+export async function verifyEmailAPI(code: string): Promise<void>{
+  const res = await apiFetch ("/auth/verify-email", {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  });
+
+  if(!res.ok) {
+    const message = await parseErrorMessage(res, "Failed to verify email");
+    throw new Error(message);
+  }
+}
+
+
 export async function getCurrentUserAPI(): Promise<CurrentUser> {
   const res = await apiFetch("/me");
 
