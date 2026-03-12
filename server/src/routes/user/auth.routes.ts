@@ -14,6 +14,7 @@ import { registerValidation, validateRequest } from '../../middlewares/helper/va
 
 import passport from 'passport';
 import { requireAuth } from '../../middlewares/auth.middleware';
+import { rateLimiter } from '../../utils/rate.limiter';
 const router = Router();
 
 router.post ('/register', registerValidation, validateRequest, register);
@@ -21,7 +22,7 @@ router.post ('/login', login);
 router.post('/refresh', refresh);
 router.post('/logout', logout);
 router.post('/google/exchange', googleOAuthExchange);
-router.post('/send-verification', requireAuth, sendVerification);
+router.post('/send-verification', requireAuth, rateLimiter, sendVerification);
 router.post('/verify-email', requireAuth, verifyEmail);
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
