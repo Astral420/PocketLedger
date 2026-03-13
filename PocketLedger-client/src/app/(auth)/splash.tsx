@@ -9,7 +9,7 @@ import {
 import { router } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Colors, FontSize, Radius } from "../constants/theme";
-import { startSession } from "../services/api";
+import { getCurrentUserAPI, startSession } from "../services/api";
 
 const { width } = Dimensions.get("window");
 
@@ -43,9 +43,24 @@ export default function SplashScreen() {
       ]),
     ]).start(async () => {
       const hasSession = await startSession();
-
       if(!isMounted) return;
-      router.replace(hasSession ? "/(tabs)" : "/(auth)/login");
+
+      if (!hasSession) {
+        router.replace("/(auth)/login");
+        return;
+      }
+
+      try {
+        const user = await getCurrentUserAPI();
+        if(!isMounted) return;
+
+        router.replace(user.email_verified ? "/(tabs)" : "/(auth)/verify");
+      } catch (error) {
+        console.error("Error getting current user:", error);
+        
+        if(!isMounted) return;
+        router.replace("/(auth)/login");
+      }
     });
 
       return () => {

@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
   profile_image_public_id TEXT NULL,
   password_hash TEXT NULL, -- nullable if Google-only accounts exist
   role TEXT NOT NULL DEFAULT 'user',
+  budget_mode TEXT NOT NULL DEFAULT 'monthly' CHECK (budget_mode IN ('weekly', 'monthly')),
   email_verified BOOLEAN NOT NULL DEFAULT FALSE,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserById = exports.updateUser = exports.updateUserImage = exports.deleteUser = exports.getAllUsers = exports.getUserByEmail = exports.createOAuthUser = exports.createUser = void 0;
+exports.markUserEmailVerified = exports.getUserById = exports.updateUser = exports.updateUserImage = exports.deleteUser = exports.getAllUsers = exports.getUserByEmail = exports.createOAuthUser = exports.createUser = void 0;
 const DB_1 = __importDefault(require("../config/DB"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const createUser = async (full_name, email, password) => {
@@ -17,9 +17,9 @@ const createUser = async (full_name, email, password) => {
 exports.createUser = createUser;
 const createOAuthUser = async (full_name, email, profileImage) => {
     const query = `
-       INSERT INTO users (full_name, email , password_hash , profile_image)
-       VALUES ($1, $2, NULL, $3)
-       RETURNING id, full_name, email, profile_image, created_at
+       INSERT INTO users (full_name, email , password_hash , profile_image, email_verified)
+       VALUES ($1, $2, NULL, $3, TRUE)
+       RETURNING id, full_name, email, profile_image, email_verified, created_at
     
     `;
     const values = [full_name, email, profileImage];
@@ -49,30 +49,31 @@ const deleteUser = async (id) => {
 exports.deleteUser = deleteUser;
 const updateUserImage = async (id, profile_image) => {
     const query = `UPDATE users SET profile_image = $2, updated_at = NOW() 
-                   WHERE id = $1 RETURNING id, profile_image, updated_at`;
+                   WHERE id = $1 RETURNING id, full_name, email, role, profile_image, updated_at`;
     const values = [id, profile_image];
     const { rows } = await DB_1.default.query(query, values);
     return rows[0] ?? null;
 };
 exports.updateUserImage = updateUserImage;
-const updateUser = async (id, full_name, password) => {
+const updateUser = async (id, full_name, email, password) => {
     const hashedPassword = password ? await bcrypt_1.default.hash(password, 10) : null;
     const query = `
     UPDATE users
     SET full_name = $2,
         password_hash = COALESCE($3, password_hash),
+        email = $4, 
         updated_at = NOW()
     WHERE id = $1
     RETURNING id, full_name, email, profile_image, updated_at
     `;
-    const values = [id, full_name, hashedPassword];
+    const values = [id, full_name, hashedPassword, email];
     const { rows } = await DB_1.default.query(query, values);
     return rows[0] ?? null;
 };
 exports.updateUser = updateUser;
 const getUserById = async (id) => {
     const query = `
-    SELECT id, full_name, email, role, profile_image
+    SELECT id, full_name, email, role, profile_image, email_verified
     FROM users
     WHERE id = $1
     LIMIT 1
@@ -81,3 +82,15 @@ const getUserById = async (id) => {
     return rows[0] ?? null;
 };
 exports.getUserById = getUserById;
+// helper
+const markUserEmailVerified = async (id) => {
+    const query = `
+    UPDATE users
+    SET email_verified = TRUE, updated_at = NOW()
+    WHERE id = $1
+    RETURNING id, email_verified, updated_at
+  `;
+    const { rows } = await DB_1.default.query(query, [id]);
+    return rows[0] ?? null;
+};
+exports.markUserEmailVerified = markUserEmailVerified;

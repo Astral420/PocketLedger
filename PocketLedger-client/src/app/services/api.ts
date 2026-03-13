@@ -2,7 +2,9 @@ import * as SecureStore from "expo-secure-store";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 
-const API_BASE = "http://localhost:3000/api/v1";
+const API_BASE = (
+  process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || "http://localhost:3000/api/v1"
+).replace(/\/+$/, "");
 
 WebBrowser.maybeCompleteAuthSession();
 

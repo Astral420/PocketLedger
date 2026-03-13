@@ -3,12 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OAuthFailure = exports.googleOAuthExchange = exports.googleOAuthCallback = exports.refresh = exports.logout = exports.login = exports.register = void 0;
+exports.verifyEmail = exports.sendVerification = exports.OAuthFailure = exports.googleOAuthExchange = exports.googleOAuthCallback = exports.refresh = exports.logout = exports.login = exports.register = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const user_model_1 = require("../models/user.model");
 const refreshToken_model_1 = require("../models/helper/refreshToken.model");
 const oauthLoginCode_model_1 = require("../models/helper/oauthLoginCode.model");
+const emailVerificationCode_model_1 = require("../models/helper/emailVerificationCode.model");
+const smtpservice_1 = require("../config/smtpservice");
 const signAccessToken = (userId) => jsonwebtoken_1.default.sign({ sub: userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
 const signRefreshToken = (userId) => jsonwebtoken_1.default.sign({ sub: userId }, process.env.JWT_SECRET_REFRESH, { expiresIn: "30d" });
 const register = async (req, res) => {
@@ -18,6 +20,11 @@ const register = async (req, res) => {
         if (existingUser)
             return res.status(409).json({ error: "User already exists" });
         const newUser = await (0, user_model_1.createUser)(full_name, email, password);
+        (0, emailVerificationCode_model_1.emailVerificationCode)(newUser.id)
+            .then((code) => (0, smtpservice_1.sendVerificationEmail)(email, code))
+            .catch((err) => {
+            console.error("Error sending verification email:", err);
+        });
         res.status(201).json({ message: "User created successfully", userId: newUser.id });
     }
     catch (err) {
@@ -219,3 +226,68 @@ const OAuthFailure = async (req, res) => {
     });
 };
 exports.OAuthFailure = OAuthFailure;
+const sendVerification = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const userEmail = req.user?.email;
+        if (!userId || !userEmail) {
+            return res.status(401).json({
+                error: "Authentication Required.",
+            });
+        }
+        const user = await (0, user_model_1.getUserById)(userId);
+        if (!user) {
+            return res.status(401).json({
+                error: "User not found",
+            });
+        }
+        if (user.email_verified) {
+            return res.status(401).json({
+                error: "Email already verified",
+            });
+        }
+        const code = await (0, emailVerificationCode_model_1.emailVerificationCode)(userId);
+        await (0, smtpservice_1.sendVerificationEmail)(userEmail, code);
+        return res.status(200).json({
+            message: "Verification email sent successfully",
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            error: "Internal server error"
+        });
+    }
+};
+exports.sendVerification = sendVerification;
+const verifyEmail = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({
+                error: "Authentication Required.",
+            });
+        }
+        const { code } = req.body ?? {};
+        if (!code || typeof code !== "string" || code.trim().length !== 6) {
+            return res.status(400).json({
+                error: "6-digit verification code is required.",
+            });
+        }
+        const isVerified = await (0, emailVerificationCode_model_1.consumeEmailVerificationCode)(userId, code);
+        if (!isVerified) {
+            return res.status(401).json({
+                error: "Invalid or expired verification code.",
+            });
+        }
+        await (0, user_model_1.markUserEmailVerified)(userId);
+        return res.status(200).json({
+            message: "Email verified successfully",
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+};
+exports.verifyEmail = verifyEmail;
